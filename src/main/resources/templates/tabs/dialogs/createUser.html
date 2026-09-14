@@ -116,7 +116,7 @@
 						timeout:2000,
 						showType:'slide'
 					});
-			      	$('#tb3').datagrid('reload');
+			      	$('#tb3').datagrid('clearSelections'); $('#tb3').datagrid('load',{_refresh:new Date().getTime()}); setTimeout(function(){$('#tb3').datagrid('reload');},1500); setTimeout(function(){$('#tb3').datagrid('reload');},5000);
 				},
 				error : function(){
 			       	$.messager.show({

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"></head><body>
+<div style="padding:10px">
+  <div style="margin-bottom:8px">已选择：<b id="bmCount">0</b> 位用户</div>
+  <table style="width:100%">
+    <tr><td style="width:90px">更换域：</td><td><input id="bmDomain" style="width:330px" prompt="留空表示不更改"></td></tr>
+    <tr><td valign="top">添加订阅：</td><td><div style="max-height:80px;overflow:auto" th:each="list : ${session.licenseVo}"><span th:if="${list.capabilityStatus} eq 'Enabled'"><input type="checkbox" name="bmAdd" th:value="${list.skuId}"><span th:text="${list.skuIdDesc}"></span></span></div></td></tr>
+    <tr><td valign="top">删除订阅：</td><td><div style="max-height:80px;overflow:auto" th:each="list : ${session.licenseVo}"><span th:if="${list.capabilityStatus} eq 'Enabled'"><input type="checkbox" name="bmRemove" th:value="${list.skuId}"><span th:text="${list.skuIdDesc}"></span></span></div></td></tr>
+    <tr><td>密码方式：</td><td><select id="bmPasswordMode" style="width:330px"><option value="unchanged">不更改</option><option value="fixed">全部使用固定密码</option><option value="random">每位用户生成不同随机密码</option></select></td></tr>
+    <tr><td>固定密码：</td><td><input id="bmFixedPassword" type="password" style="width:325px" autocomplete="new-password" placeholder="不设置前端位数限制"></td></tr>
+    <tr><td>随机位数：</td><td><input id="bmRandomLength" value="16" style="width:330px"></td></tr>
+    <tr><td>密码过期：</td><td><select id="bmExpiration" style="width:330px"><option value="unchanged">保持不变</option><option value="expire">允许按租户策略过期</option><option value="never">永不过期</option></select></td></tr>
+    <tr><td>首次登录：</td><td><label><input id="bmForceChange" type="checkbox" checked> 强制更改密码（仅更改密码时生效）</label></td></tr>
+  </table>
+  <div style="text-align:right;margin-top:12px"><a href="javascript:void(0)" class="easyui-linkbutton" onclick="submitBatchManage()">执行</a> <a href="javascript:void(0)" class="easyui-linkbutton" onclick="$('#dlgBatchManage').dialog('close')">取消</a></div>
+</div>
+<script type="text/javascript" th:inline="none">
+$('#bmDomain').combobox({url:'/getDomains',valueField:'id',textField:'text',editable:true});
+$('#bmPasswordMode,#bmExpiration').combobox({editable:false});
+$('#bmRandomLength').numberbox({min:8,max:256});
+$('#bmCount').text(window.batchManageRows ? window.batchManageRows.length : 0);
+function checkedCsv(name){var values=[];$('input[name='+name+']:checked').each(function(){values.push($(this).val());});return values.join(',');}
+function submitBatchManage(){
+ var rows=window.batchManageRows||[]; if(!rows.length){$.messager.alert('错误','请先选择用户','error');return;}
+ var users=[];$.each(rows,function(_,r){users.push({id:r.id,upn:r.userPrincipalName});});
+ var mode=$('#bmPasswordMode').combobox('getValue'), fixed=$('#bmFixedPassword').val()||'';
+ if(mode==='fixed' && fixed===''){$.messager.alert('错误','请输入固定密码','error');return;}
+ $.messager.confirm('批量编辑','确定编辑 '+rows.length+' 位用户吗？',function(ok){if(!ok)return;
+  $.ajax({type:'POST',url:'/batchManageOfficeUser',data:{usersJson:JSON.stringify(users),domain:$('#bmDomain').combobox('getText')||'',addLicenses:checkedCsv('bmAdd'),removeLicenses:checkedCsv('bmRemove'),passwordMode:mode,fixedPassword:fixed,randomLength:$('#bmRandomLength').numberbox('getValue')||16,expirationMode:$('#bmExpiration').combobox('getValue'),forceChange:$('#bmForceChange').is(':checked')},
+   success:function(result){$('#dlgBatchManage').dialog('close');$('#tb3').datagrid('clearSelections');$('#tb3').datagrid('reload');$.messager.alert('批量编辑结果',result,'info');},
+   error:function(xhr){$.messager.alert('错误',xhr.responseText||'批量编辑失败','error');}
+  });
+ });
+}
+</script></body></html>

@@ -143,7 +143,7 @@
 			    url : "/massCreateOfficeUser",
 			    data : { "prefix": prefix1, "domain":domain , "count": count, "licenses": licenses2, "userPwd": userPwd2, "strategy": strategy, "randomLength": randomLength, "regexCode": regexCode },
 			    success : function(result) {
-			    	$('#tb3').datagrid('reload');
+			    	$('#tb3').datagrid('clearSelections'); $('#tb3').datagrid('load',{_refresh:new Date().getTime()}); setTimeout(function(){$('#tb3').datagrid('reload');},1500); setTimeout(function(){$('#tb3').datagrid('reload');},5000);
 			    	$.messager.alert('结果', result ,'');
 				},
 				error : function(){
@@ -153,7 +153,7 @@
 						timeout:2000,
 						showType:'slide'
 					}); 
-			       	$('#tb3').datagrid('reload');
+			       	$('#tb3').datagrid('clearSelections'); $('#tb3').datagrid('load',{_refresh:new Date().getTime()}); setTimeout(function(){$('#tb3').datagrid('reload');},1500); setTimeout(function(){$('#tb3').datagrid('reload');},5000);
 				}
 			});
 			

@@ -10,7 +10,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import com.alibaba.fastjson.JSON;
+
 import hqr.o365.domain.LicenseInfo;
+import hqr.o365.service.BatchManageOfficeUser;
 import hqr.o365.service.CreateOfficeUser;
 import hqr.o365.service.DeleteOfficeUser;
 import hqr.o365.service.DomainAction;
@@ -64,6 +67,9 @@ public class UserTabCtrl {
 	
 	@Autowired
 	private MassCreateOfficeUser mcou;
+
+	@Autowired
+	private BatchManageOfficeUser bmou;
 	
 	@Autowired
 	private DomainAction da;
@@ -112,6 +118,15 @@ public class UserTabCtrl {
 		return "tabs/dialogs/massCreateUser";
 	}
 	
+	@RequestMapping(value = {"tabs/dialogs/batchManageUser.html"})
+	public String batchManageUserDialog(HttpServletRequest req) {
+		HashMap<String, Object> map = gli.getLicenses();
+		Object obj = map.get("licenseVo");
+		if (obj != null) req.getSession().setAttribute("licenseVo", obj);
+		req.getSession().removeAttribute("domainVo");
+		return "tabs/dialogs/batchManageUser";
+	}
+
 	@RequestMapping(value = {"tabs/dialogs/domain.html"})
 	public String dummyDomain(HttpServletRequest req) {
 		Object tmp2 = req.getSession().getAttribute("licenseVo");
@@ -237,6 +252,23 @@ public class UserTabCtrl {
 		return sb.toString();
 	}
 	
+	@ResponseBody
+	@RequestMapping(value = {"/batchManageOfficeUser"}, method = RequestMethod.POST)
+	public String batchManageOfficeUser(@RequestParam String usersJson,
+			@RequestParam(defaultValue="") String domain,
+			@RequestParam(defaultValue="") String addLicenses,
+			@RequestParam(defaultValue="") String removeLicenses,
+			@RequestParam(defaultValue="unchanged") String passwordMode,
+			@RequestParam(defaultValue="") String fixedPassword,
+			@RequestParam(defaultValue="16") int randomLength,
+			@RequestParam(defaultValue="unchanged") String expirationMode,
+			@RequestParam(defaultValue="false") boolean forceChange) {
+		try {
+			HashMap<String,Object> result=bmou.updateUsers(usersJson,domain,addLicenses,removeLicenses,passwordMode,fixedPassword,randomLength,expirationMode,forceChange);
+			return "总数:"+result.get("total")+"<br>成功:"+result.get("success")+"<br>失败:"+result.get("failed")+"<br>"+JSON.toJSONString(result.get("details"));
+		} catch(Exception e) { return "批量编辑失败："+e.getMessage(); }
+	}
+
 	@ResponseBody
 	@RequestMapping(value = {"/deleteOfficeUser"}, method = RequestMethod.POST)
 	public String deleteUser(@RequestParam(name="uids") String uids) {
