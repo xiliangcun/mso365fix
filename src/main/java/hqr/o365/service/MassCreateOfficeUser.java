@@ -96,11 +96,11 @@ public class MassCreateOfficeUser {
 				
 				List<String> userList = new ArrayList<String>();
 				//create users
+				UsernameGenerator usernameGenerator = new UsernameGenerator();
 				for(int massCount=0; massCount<count; massCount++) {
-					UsernameGenerator usernameGenerator = new UsernameGenerator();
 					String mailNickname = usernameGenerator.next(prefix, strategy, randomLength, regexCode, massCount, count);
 					String userPrincipalName = mailNickname + domain;
-					String displayName = sb.toString();
+					String displayName = mailNickname;
 					
 					System.out.println("mailNickname:"+mailNickname+"\t"+userPrincipalName);
 					
