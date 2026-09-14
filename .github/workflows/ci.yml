@@ -1,0 +1,22 @@
+name: CI
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: maven
+      - run: mvn --batch-mode --update-snapshots verify
+      - uses: actions/upload-artifact@v4
+        with:
+          name: o365-jar
+          path: target/*.jar
